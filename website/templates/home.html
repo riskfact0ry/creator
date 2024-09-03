@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<h1 align="center">Your Forest</h1>
+<ul class="list-group list-group-flush" id="trees">
+  {% for tree in trees %}
+  <li class="list-group-item">
+    Planted on {{ tree.date.strftime('%Y-%m-%d %H:%M:%S') }}
+    <button type="button" class="close" onClick="deleteTree({{ tree.id }})">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </li>
+  {% endfor %}
+</ul>
+
+<!-- Timer display and plant button -->
+<div align="center">
+  <div id="timer" style="display:none;">
+    <h4>Time Remaining: <span id="time">20:00</span></h4>
+  </div>
+  <button id="plantButton" class="btn btn-primary" onclick="startTimer()">Plant Tree</button>
+</div>
+
+<script>
+  let timerInterval;
+
+  function startTimer() {
+    // Hide plant button and show timer
+    document.getElementById('plantButton').style.display = 'none';
+    document.getElementById('timer').style.display = 'block';
+
+    let timeLeft = 20 * 60; // 20 minutes in seconds
+    timerInterval = setInterval(() => {
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        document.getElementById('timer').style.display = 'none';
+        document.getElementById('plantButton').style.display = 'block';
+        plantTree();
+      } else {
+        timeLeft--;
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        document.getElementById('time').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      }
+    }, 1000);
+  }
+
+  function plantTree() {
+    fetch('/plant-tree', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token() }}'  // Ensure CSRF token is included
+      },
+      body: JSON.stringify({})  // You can pass additional data if needed
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();  // Reload page to update tree list
+      } else {
+        alert('Failed to plant tree.');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('An error occurred.');
+    });
+  }
+
+  function deleteTree(treeId) {
+    fetch('/delete-tree', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token() }}'  // Ensure CSRF token is included
+      },
+      body: JSON.stringify({ treeId })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();  // Reload page to update tree list
+      } else {
+        alert('Failed to delete tree.');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('An error occurred.');
+    });
+  }
+</script>
+{% endblock %}

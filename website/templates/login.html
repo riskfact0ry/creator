@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<form method="POST">
+  {{ form.hidden_tag() }}  <!-- Include CSRF token here -->
+  <h3 align="center">Login</h3>
+  <div class="form-group">
+    <label for="email">Email Address</label>
+    {{ form.email(class="form-control", placeholder="Enter email") }}
+  </div>
+  <div class="form-group">
+    <label for="password">Password</label>
+    {{ form.password(class="form-control", placeholder="Enter password") }}
+  </div>
+  {{ form.submit(class="btn btn-primary") }}
+</form>
+{% endblock %}
